@@ -1,7 +1,9 @@
 import numpy as np
+from enum import Enum
 from RlGlue import BaseEnvironment
 
 # Constants
+
 RIGHT = 0
 SKIP = 1
 

@@ -11,7 +11,7 @@ from utils.Collector import Collector
 from utils.rl_glue import RlGlueCompatWrapper
 
 RUNS = 10
-EPISODES = 100
+EPISODES = 10
 LEARNERS = [QRC, QC, QLearning]
 
 COLORS = {
@@ -67,6 +67,7 @@ import matplotlib.pyplot as plt
 from utils.plotting import plot
 
 ax = plt.gca()
+f = plt.gcf()
 
 for Learner in LEARNERS:
     name = Learner.__name__
@@ -75,3 +76,4 @@ for Learner in LEARNERS:
 
 plt.legend()
 plt.show()
+f.savefig('/content/drive/My Drive/Regularized-GradientTD/figures/figure5.png')

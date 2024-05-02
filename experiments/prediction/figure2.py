@@ -156,10 +156,6 @@ for run in range(RUNS):
     for problem in PROBLEMS:
         for Learner in LEARNERS:
             
-            # only run TDRC and TDW learners
-            # if Learner.__name__ not in ['TDRC', 'TDW']:
-            #     continue
-
             # for reproducibility, set the random seed for each run
             # also reset the seed for each learner, so we guarantee each sees the same data
             np.random.seed(run)
@@ -168,6 +164,12 @@ for run in range(RUNS):
             # just to be sure we don't bleed one learner into the next
             Env = problem['env']
             env = Env()
+
+            if not (problem['env'].__name__ == 'RandomWalk' and problem['representation'].__name__ == 'TabularRep'):
+                continue
+
+            if Learner.__name__ not in ['TDW', 'TDRC']:
+                continue
 
             target = problem['target']
             behavior = problem['behavior']
@@ -179,24 +181,14 @@ for run in range(RUNS):
 
             # build the X, P, R, and D matrices for computing RMSPBE
             X, P, R, D = env.getXPRD(target, rep)
-            if Learner.__name__ == 'TDW':
-                n_actions = len(behavior.probs(0)) # get length of list of possible actions taken from policy
-                print("n_actions:", n_actions)
-                X = np.ones((X.shape[0], n_actions))
-                print('X:', X.shape)
-                # print('P:', P.shape)
-                # print('R:', R.shape)
-                # print('D:', D.shape)
-                RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
-            else:
-                RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
+            RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
 
             # build a new instance of the learning algorithm
             learner = Learner(rep.features(), {
                 'gamma': problem['gamma'],
                 'alpha': problem['stepsizes'][Learner.__name__],
                 'beta': 1,
-                'n_conditions': n_actions if Learner.__name__ == 'TDW' else None,
+                'map': rep.map,
             })
 
             # build an "agent" which selects actions according to the behavior
@@ -226,8 +218,10 @@ for run in range(RUNS):
                 # evaluate the RMPSBE
                 # subsample to reduce computational cost
                 if step % 100 == 0:
+                    print("step:", step)
                     w = learner.getWeights()
                     rmspbe = RMSPBE(w)
+                    print('rmspbe:', rmspbe)
 
                     #  create a unique key to store the data for this env/representation/agent tuple
                     data_key = f'{Env.__name__}-{Rep.__name__}-{Learner.__name__}'
@@ -236,6 +230,7 @@ for run in range(RUNS):
 
             # tell the data collector we're done collecting data for this env/learner/rep combination
             collector.reset()
+
 
 # ---------------------
 # Plotting the bar plot
@@ -251,6 +246,9 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
+    if not (problem['env'].__name__ == 'RandomWalk' and problem['representation'].__name__ == 'TabularRep' and Learner.__name__ in ['TDW', 'TDRC']):
+                continue
+
     mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
 
     # compute TDRC's AUC
@@ -263,16 +261,22 @@ for i, problem in enumerate(PROBLEMS):
     # additional offset between problems
     # creates space between the problems
     offset += 3
+
     for j, Learner in enumerate(LEARNERS):
 
-        # only use TDRC and TDW learners
-        if Learner.__name__ not in ['TDRC', 'TDW']:
-            continue
+        
 
         print("   LEARNER--", Learner.__name__)
         learner = Learner.__name__
         env = problem['env'].__name__
         rep = problem['representation'].__name__
+
+        if not (problem['env'].__name__ == 'RandomWalk' and problem['representation'].__name__ == 'TabularRep' and Learner.__name__ in ['TDW', 'TDRC']):
+                continue
+
+        # only use TDRC and TDW learners
+        if Learner.__name__ not in ['TDRC', 'TDW']:
+            continue
 
         x = i * len(LEARNERS) + j + offset
 
@@ -288,4 +292,48 @@ for i, problem in enumerate(PROBLEMS):
         ax.bar(x, relative_auc, yerr=relative_stderr, color=COLORS[learner], tick_label='')
 
 plt.show()
-f.savefig('/content/drive/MyDrive/Regularized-GradientTD/figures/figure1.png')
+f.savefig(r'G:\My Drive\Regularized-GradientTD\figures\figure2a.png')
+
+
+# Setting up the figure and axes
+fig, axs = plt.subplots(len(PROBLEMS), 1, figsize=(10, 5 * len(PROBLEMS)))
+
+# Ensure `axs` is always an array, even with one element
+if len(PROBLEMS) == 1:
+    axs = [axs]
+
+for i, problem in enumerate(PROBLEMS):
+    env_name = problem['env'].__name__
+    rep_name = problem['representation'].__name__
+    print("env name:", env_name)
+    print("rep_name:", rep_name)
+    
+    if not (problem['env'].__name__ == 'RandomWalk' and problem['representation'].__name__ == 'TabularRep'):
+                continue
+
+    # This axis
+    ax = axs[i]
+    ax.set_title(f'Learning Curve in {env_name} with {rep_name}')
+    ax.set_xlabel('Steps')
+    ax.set_ylabel('RMSPBE')
+
+    for Learner in LEARNERS:
+        if Learner.__name__ not in ['TDW', 'TDRC']:
+             continue
+        learner_name = Learner.__name__
+        data_key = f'{env_name}-{rep_name}-{learner_name}'
+        mean_curve, stderr_curve, _ = collector.getStats(data_key)
+        if learner_name == "TDW":
+          print(mean_curve)
+
+        # Plotting the mean RMSPBE over steps with error bars
+        steps = range(len(mean_curve))  # Assuming mean_curve length matches the number of steps
+        ax.errorbar(steps, mean_curve, yerr=stderr_curve, label=f'{learner_name}')
+
+    # Adding a legend to each subplot
+    ax.legend()
+
+# Adjusting layout to prevent overlap
+plt.tight_layout()
+plt.show()
+fig.savefig(r'G:\My Drive\Regularized-GradientTD\figures\figure2b.png')
