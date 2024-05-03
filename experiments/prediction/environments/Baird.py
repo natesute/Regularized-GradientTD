@@ -1,5 +1,6 @@
 import numpy as np
 from RlGlue import BaseEnvironment
+from utils.weighting import features_to_probabilities
 
 # Constants
 DASH = 0
@@ -22,7 +23,7 @@ class Baird(BaseEnvironment):
 
         return (0, self.state, False)
 
-    def getXPRD(self, target, rep):
+    def getXPRD(self, target, rep, weighted=False):
         N = self.states
         # build the state * feature matrix
         # add an extra state at the end to encode the "terminal" state
@@ -43,7 +44,8 @@ class Baird(BaseEnvironment):
         return X, P, R, D
 
 class BairdRep:
-    def __init__(self):
+    def __init__(self, weighted=False):
+        self.weighted = weighted
         self.map = np.array([
             [1, 2, 0, 0, 0, 0, 0, 0],
             [1, 0, 2, 0, 0, 0, 0, 0],
@@ -53,6 +55,8 @@ class BairdRep:
             [1, 0, 0, 0, 0, 0, 2, 0],
             [2, 0, 0, 0, 0, 0, 0, 1],
         ])
+        if weighted:
+            self.map = features_to_probabilities(self.map)
 
     def encode(self, s):
         return self.map[s]

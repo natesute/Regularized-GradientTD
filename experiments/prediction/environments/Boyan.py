@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from RlGlue import BaseEnvironment
+from utils.weighting import features_to_probabilities
 
 # Constants
 
@@ -62,7 +63,8 @@ class Boyan(BaseEnvironment):
 
 
 class BoyanRep:
-    def __init__(self):
+    def __init__(self, weighted=False):
+        self.weighted = weighted
         self.map = np.array([
             [1,    0,    0,    0   ],
             [0.75, 0.25, 0,    0   ],
@@ -78,6 +80,8 @@ class BoyanRep:
             [0,    0,    0.25, 0.75],
             [0,    0,    0,    1   ],
         ])
+        if weighted:
+            self.map = features_to_probabilities(self.map)
 
     def encode(self, s):
         return self.map[s]

@@ -1,10 +1,6 @@
 import numpy as np
 
 def buildRMSPBE(X, P, R, D, gamma):
-    # print("X:", X)
-    # print("D:", D)
-    # print("P:", P)
-    # print("np.eye(X.shape[0]):", np.eye(X.shape[0]))
     A = X.T.dot(D).dot(np.eye(X.shape[0]) - gamma * P).dot(X)
     b = X.T.dot(D).dot(R)
     C = X.T.dot(D).dot(X)

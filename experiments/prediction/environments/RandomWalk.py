@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from RlGlue import BaseEnvironment
+from utils.weighting import features_to_probabilities
 
 # Constants
 LEFT = 0
@@ -78,11 +79,15 @@ class RandomWalk(BaseEnvironment):
 #  [ 1, 1, 1, 1, 0 ]]
 # then normalizes the feature vectors for each state
 class InvertedRep:
-    def __init__(self, N = 5):
+    def __init__(self, N = 5, weighted=False):
+        self.weighted = weighted
         m = np.ones((N, N)) - np.eye(N)
 
         self.map = np.zeros((N + 1, N))
         self.map[:N] = (m.T / np.linalg.norm(m, axis = 1)).T
+
+        if weighted:
+            self.map = features_to_probabilities(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -97,11 +102,15 @@ class InvertedRep:
 #  [ 0, 0, 0, 1, 0 ],
 #  [ 0, 0, 0, 0, 1 ]]
 class TabularRep:
-    def __init__(self, N = 5):
+    def __init__(self, N = 5, weighted=False):
+        self.weighted = weighted
         m = np.eye(N)
 
         self.map = np.zeros((N + 1, N))
         self.map[:N] = m
+
+        if weighted:
+            self.map = features_to_probabilities(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -117,7 +126,8 @@ class TabularRep:
 #  [ 0, 0, 1 ]]
 # then normalizes the feature vectors for each state
 class DependentRep:
-    def __init__(self, N = 5):
+    def __init__(self, N = 5, weighted=False):
+        self.weighted = weighted
         nfeats = int(N // 2 + 1)
         self.map = np.zeros((N + 1, nfeats))
 
@@ -131,6 +141,9 @@ class DependentRep:
             idx += 1
 
         self.map[:N] = (self.map[:N].T / np.linalg.norm(self.map[:N], axis = 1)).T
+
+        if weighted:
+            self.map = features_to_probabilities(self.map)
 
     def encode(self, s):
         return self.map[s]
