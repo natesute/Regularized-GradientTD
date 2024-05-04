@@ -22,7 +22,7 @@ from agents.Vtrace import Vtrace
 # Set up parameters for experiment
 # --------------------------------
 
-RUNS = 5
+RUNS = 20
 LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 LEARNER = GTD2
 
@@ -43,6 +43,8 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.03125,
+            'GTDW': 0.015625,
+            'GTDW2': 0.03125,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
         }
@@ -63,6 +65,8 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.0625,
+            'GTDW': 0.03125,
+            'GTDW2': 0.0625,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
         }
@@ -83,6 +87,8 @@ PROBLEMS = [
             'TDRC': 0.125,
             'TDC': 0.125,
             'GTD2': 0.125,
+            'GTDW': 0.015625,
+            'GTDW2': 0.0625,
             'HTD': 0.125,
             'Vtrace': 0.125,
         }
@@ -103,6 +109,8 @@ PROBLEMS = [
             'TDRC': 0.0625,
             'TDC': 0.5,
             'GTD2': 0.5,
+            'GTDW': 0.0078125,
+            'GTDW2': 0.03125,
             'HTD': 0.0625,
             'Vtrace': 0.0625,
         }
@@ -124,6 +132,8 @@ PROBLEMS = [
             'TDRC': 0.015625,
             'TDC': 0.00390625,
             'GTD2': 0.00390625,
+            'GTDW': 0.00390625,
+            'GTDW2': 0.00390625,
             'HTD': 0.00390625,
             'Vtrace': 0.00390625,
         }
@@ -171,7 +181,7 @@ for run in range(RUNS):
                 # build a new instance of the learning algorithm
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
-                    'alpha': problem['stepsizes'][Learner.__name__] if not using_weighting else problem['stepsizes'][Learner.__name__] / 1,
+                    'alpha': problem['stepsizes'][Learner.__name__] if not using_weighting else problem['stepsizes']['GTDW2'],
                     'beta': 1,
                 })
 

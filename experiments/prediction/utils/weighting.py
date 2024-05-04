@@ -27,3 +27,9 @@ def features_to_probabilities(state_space):
             probability_state_space[:, feature_idx][state_space[:, feature_idx] == value] = log_probabilities[i]
 
     return probability_state_space
+
+def to_weighted_features(state_space):
+    probability_state_space = features_to_probabilities(state_space)
+    sigmoid_state_space = 1 / (1 + np.exp(-state_space))
+    weighted_state_space = sigmoid_state_space * probability_state_space
+    return weighted_state_space

@@ -1,6 +1,6 @@
 import numpy as np
 from RlGlue import BaseEnvironment
-from utils.weighting import features_to_probabilities
+from utils.weighting import to_weighted_features
 
 # Constants
 DASH = 0
@@ -55,8 +55,10 @@ class BairdRep:
             [1, 0, 0, 0, 0, 0, 2, 0],
             [2, 0, 0, 0, 0, 0, 0, 1],
         ])
+
+        self.original_map = self.map.copy()
         if weighted:
-            self.map = features_to_probabilities(self.map)
+            self.map = to_weighted_features(self.map)
 
     def encode(self, s):
         return self.map[s]

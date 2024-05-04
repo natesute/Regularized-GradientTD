@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 from RlGlue import BaseEnvironment
-from utils.weighting import features_to_probabilities
+from utils.weighting import to_weighted_features
 
 # Constants
 LEFT = 0
@@ -86,8 +86,10 @@ class InvertedRep:
         self.map = np.zeros((N + 1, N))
         self.map[:N] = (m.T / np.linalg.norm(m, axis = 1)).T
 
+        self.original_map = self.map.copy()
+
         if weighted:
-            self.map = features_to_probabilities(self.map)
+            self.map = to_weighted_features(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -109,8 +111,10 @@ class TabularRep:
         self.map = np.zeros((N + 1, N))
         self.map[:N] = m
 
+        self.original_map = self.map.copy()
+
         if weighted:
-            self.map = features_to_probabilities(self.map)
+            self.map = to_weighted_features(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -142,8 +146,10 @@ class DependentRep:
 
         self.map[:N] = (self.map[:N].T / np.linalg.norm(self.map[:N], axis = 1)).T
 
+        self.original_map = self.map.copy()
+
         if weighted:
-            self.map = features_to_probabilities(self.map)
+            self.map = to_weighted_features(self.map)
 
     def encode(self, s):
         return self.map[s]
