@@ -1,7 +1,6 @@
 import numpy as np
-from enum import Enum
 from RlGlue import BaseEnvironment
-from utils.weighting import to_weighted_features
+from utils.weighting import WEIGHTINGS
 
 # Constants
 LEFT = 0
@@ -79,8 +78,8 @@ class RandomWalk(BaseEnvironment):
 #  [ 1, 1, 1, 1, 0 ]]
 # then normalizes the feature vectors for each state
 class InvertedRep:
-    def __init__(self, N = 5, weighted=False):
-        self.weighted = weighted
+    def __init__(self, N = 5, weighting=lambda x: x):
+        self.weighting = weighting
         m = np.ones((N, N)) - np.eye(N)
 
         self.map = np.zeros((N + 1, N))
@@ -88,8 +87,7 @@ class InvertedRep:
 
         self.original_map = self.map.copy()
 
-        if weighted:
-            self.map = to_weighted_features(self.map)
+        self.map = weighting(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -104,8 +102,8 @@ class InvertedRep:
 #  [ 0, 0, 0, 1, 0 ],
 #  [ 0, 0, 0, 0, 1 ]]
 class TabularRep:
-    def __init__(self, N = 5, weighted=False):
-        self.weighted = weighted
+    def __init__(self, N = 5, weighting=lambda x: x):
+        self.weighting = weighting
         m = np.eye(N)
 
         self.map = np.zeros((N + 1, N))
@@ -113,8 +111,7 @@ class TabularRep:
 
         self.original_map = self.map.copy()
 
-        if weighted:
-            self.map = to_weighted_features(self.map)
+        self.map = weighting(self.map)
 
     def encode(self, s):
         return self.map[s]
@@ -130,8 +127,9 @@ class TabularRep:
 #  [ 0, 0, 1 ]]
 # then normalizes the feature vectors for each state
 class DependentRep:
-    def __init__(self, N = 5, weighted=False):
-        self.weighted = weighted
+    # initialise weighting as lambda identity function
+    def __init__(self, N = 5, weighting=lambda x: x):
+        self.weighting = weighting
         nfeats = int(N // 2 + 1)
         self.map = np.zeros((N + 1, nfeats))
 
@@ -148,8 +146,7 @@ class DependentRep:
 
         self.original_map = self.map.copy()
 
-        if weighted:
-            self.map = to_weighted_features(self.map)
+        self.map = weighting(self.map)
 
     def encode(self, s):
         return self.map[s]

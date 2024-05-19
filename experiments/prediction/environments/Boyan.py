@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 from RlGlue import BaseEnvironment
-from utils.weighting import to_weighted_features
+from utils.weighting import WEIGHTINGS
 
 # Constants
 
@@ -63,8 +63,8 @@ class Boyan(BaseEnvironment):
 
 
 class BoyanRep:
-    def __init__(self, weighted=False):
-        self.weighted = weighted
+    def __init__(self, weighting=lambda x: x):
+        self.weighting = weighting
         self.map = np.array([
             [1,    0,    0,    0   ],
             [0.75, 0.25, 0,    0   ],
@@ -83,8 +83,7 @@ class BoyanRep:
 
         self.original_map = self.map.copy()
 
-        if weighted:
-            self.map = to_weighted_features(self.map)
+        self.map = weighting(self.map)
 
     def encode(self, s):
         return self.map[s]

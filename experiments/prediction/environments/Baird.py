@@ -1,6 +1,6 @@
 import numpy as np
 from RlGlue import BaseEnvironment
-from utils.weighting import to_weighted_features
+from utils.weighting import WEIGHTINGS
 
 # Constants
 DASH = 0
@@ -44,8 +44,8 @@ class Baird(BaseEnvironment):
         return X, P, R, D
 
 class BairdRep:
-    def __init__(self, weighted=False):
-        self.weighted = weighted
+    def __init__(self, weighting=lambda x: x):
+        self.weighting = weighting
         self.map = np.array([
             [1, 2, 0, 0, 0, 0, 0, 0],
             [1, 0, 2, 0, 0, 0, 0, 0],
@@ -57,8 +57,8 @@ class BairdRep:
         ])
 
         self.original_map = self.map.copy()
-        if weighted:
-            self.map = to_weighted_features(self.map)
+        
+        self.map = weighting(self.map)
 
     def encode(self, s):
         return self.map[s]
