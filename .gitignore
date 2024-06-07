@@ -1,4 +1,5 @@
-env/
-.vscode
-*.pyc
+figures/
+*.pkl
+**/__pycache__/
 newenv/
+.vscode/
