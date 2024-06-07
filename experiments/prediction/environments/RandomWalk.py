@@ -70,20 +70,20 @@ class RandomWalk(BaseEnvironment):
 # Build feature reps from Sutton et al., 2009
 # -------------------------------------------
 
-# Generates a representation like:
-# [[ 0, 1, 1, 1, 1 ],
-#  [ 1, 0, 1, 1, 1 ],
-#  [ 1, 1, 0, 1, 1 ],
-#  [ 1, 1, 1, 0, 1 ],
-#  [ 1, 1, 1, 1, 0 ]]
-# then normalizes the feature vectors for each state
-class InvertedRep:
+class MultiRep:
     def __init__(self, N = 5, weighting=lambda x: x):
         self.weighting = weighting
-        m = np.ones((N, N)) - np.eye(N)
-
-        self.map = np.zeros((N + 1, N))
-        self.map[:N] = (m.T / np.linalg.norm(m, axis = 1)).T
+        self.map = np.array([[1, 0, 1, 0, 1, 0, 0, 2, 0],
+                             [0, 1, 0, 1, 0, 1, 1, 0, 3],
+                             [0, 1, 1, 0, 0, 1, 1, 1, 1],
+                             [1, 1, 2, 1, 2, 0, 1, 2, 0],
+                             [1, 0, 0, 0, 1, 0, 0, 0, 0],
+                             [0, 1, 0, 2, 2, 2, 0, 1, 3],
+                             [1, 2, 1, 1, 2, 3, 0, 1, 0],
+                             [0, 0, 0, 0, 0, 0, 3, 3, 3],
+                             [0, 2, 1, 2, 0, 1, 0, 2, 3],
+                             [2, 0, 2, 0, 3, 1, 3, 1, 3],
+                             [0, 0, 1, 0, 0, 1, 1, 1, 1]], dtype=float)
 
         self.original_map = self.map.copy()
 
@@ -108,6 +108,31 @@ class TabularRep:
 
         self.map = np.zeros((N + 1, N))
         self.map[:N] = m
+
+        self.original_map = self.map.copy()
+
+        self.map = weighting(self.map)
+
+    def encode(self, s):
+        return self.map[s]
+
+    def features(self):
+        return self.map.shape[1]
+
+# Generates a representation like:
+# [[ 0, 1, 1, 1, 1 ],
+#  [ 1, 0, 1, 1, 1 ],
+#  [ 1, 1, 0, 1, 1 ],
+#  [ 1, 1, 1, 0, 1 ],
+#  [ 1, 1, 1, 1, 0 ]]
+# then normalizes the feature vectors for each state
+class InvertedRep:
+    def __init__(self, N = 5, weighting=lambda x: x):
+        self.weighting = weighting
+        m = np.ones((N, N)) - np.eye(N)
+
+        self.map = np.zeros((N + 1, N))
+        self.map[:N] = (m.T / np.linalg.norm(m, axis = 1)).T
 
         self.original_map = self.map.copy()
 

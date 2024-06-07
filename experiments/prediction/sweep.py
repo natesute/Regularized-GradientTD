@@ -25,14 +25,18 @@ LEARNERS = [GTD2]
 
 collector = Collector()
 
+# dictionary to store stepsizes with minimum RMSPBE
+min_stepsizes = {}
+
 for run in range(RUNS):
-    for problem in PROBLEMS:
-        for Learner in LEARNERS:
-            for weighting_num, weighting in enumerate(WEIGHTINGS):
+    for Learner in LEARNERS:
+        for weighting_num, weighting in enumerate(WEIGHTINGS):
+            for problem in PROBLEMS:
                 env_name = problem['env'].__name__
                 rep_name = problem['representation'].__name__
                 
-                for stepsize in STEPSIZES:
+                mean_rmspbes = np.zeros(len(STEPSIZES))
+                for i, stepsize in enumerate(STEPSIZES):
                     # Reproducibility and reset
                     np.random.seed(run)
 
@@ -42,6 +46,8 @@ for run in range(RUNS):
                     target = problem['target']
                     Rep = problem['representation']
                     rep = Rep(weighting=weighting)
+
+                    data_key = f"{env_name}-{rep_name}-{weighting.__name__}-{stepsize}"
 
                     print(f"Run {run}, Env: {env_name}, Rep: {rep_name}, Weighting: {weighting.__name__}, Stepsize: {stepsize}")
 
@@ -68,9 +74,27 @@ for run in range(RUNS):
                         if step % 100 == 0:
                             w = learner.getWeights()
                             rmspbe = RMSPBE(w)
-                            collector.collect(f"{env_name}-{rep_name}-{weighting.__name__}-{stepsize}", rmspbe)
+                            # print("Collecting data for", env_name, rep_name, weighting.__name__, stepsize, "at step", step, "RMSPBE:", rmspbe)
+                            collector.collect(data_key, rmspbe)
 
                     # tell the data collector we're done collecting data for this env/learner/rep/weighting/stepsize combination
                     collector.reset()
+                    # print("Stats for", data_key, ":", collector.getStats(data_key))
+                    # print("mean_rmspbes", mean_rmspbes)
+                    mean_rmspbes[i] = collector.getStats(data_key)[0].mean()
+
+                # get stepsize with min RMSPBE (and not NaN)
+                min_stepsize_index = np.nanargmin(mean_rmspbes)
+                min_stepsize = STEPSIZES[min_stepsize_index]
+
+                print(f"Min RMSPBE at stepsize: {min_stepsize} for {weighting.__name__} weighting")
+
+                # store the min stepsize for this env/rep/weighting combination
+                min_stepsizes[(weighting.__name__)] = min_stepsize
+
 with open('sweep.pkl', 'wb') as f:
     pickle.dump(collector, f)
+
+# pickle the min_stepsizes dictionary for use in training
+with open('min_stepsizes.pkl', 'wb') as f:
+    pickle.dump(min_stepsizes, f)

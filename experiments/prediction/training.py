@@ -20,8 +20,12 @@ from agents.Vtrace import Vtrace
 # Set up parameters for experiment
 # --------------------------------
 
-RUNS = 2
+RUNS = 20
 LEARNERS = [GTD2]#, TDC, Vtrace, HTD, TD, TDRC]
+
+# load the precomputed optimal stepsizes
+with open('min_stepsizes.pkl', 'rb') as f:
+    min_stepsizes = pickle.load(f)
 
 # -----------------------------------
 # Collect the data for the experiment
@@ -55,10 +59,13 @@ for run in range(RUNS):
                 X, P, R, D = env.getXPRD(target, rep)
                 RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
 
+                # get the precomputed stepsize (alpha)
+                alpha = min_stepsizes[(Env.__name__, Rep.__name__, weighting.__name__)]
+
                 # build a new instance of the learning algorithm
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
-                    'alpha': problem['stepsizes'][Learner.__name__][weighting_num],
+                    'alpha': alpha,
                     'beta': 1,
                 })
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from environments.RandomWalk import RandomWalk, TabularRep, DependentRep, InvertedRep
+from environments.RandomWalk import RandomWalk, MultiRep, TabularRep, DependentRep, InvertedRep
 from environments.Boyan import Boyan, BoyanRep
 from environments.Baird import Baird, BairdRep
 
@@ -9,6 +9,26 @@ from utils.policies import actionArrayToPolicy, matrixToPolicy
 STEPSIZES = [2**(i) for i in range(-6, 7)]
 
 PROBLEMS = [
+    {
+        'env': RandomWalk,
+        'representation': MultiRep,
+        # go LEFT 40% of the time
+        'target': actionArrayToPolicy([0.4, 0.6]),
+        # take each action equally
+        'behavior': actionArrayToPolicy([0.5, 0.5]),
+        'gamma': 1.0,
+        'steps': 3000,
+        # hardcode stepsizes found from parameter study
+        # NOT BEING USED IN WEIGHTING EXPERIMENTS. USING SWEEP
+        'stepsizes': {
+            'TD': 0.03125,
+            'TDRC': 0.03125,
+            'TDC': 0.0625,
+            'GTD2': [0.03125, 0.015625, 0.03125],
+            'HTD': 0.03125,
+            'Vtrace': 0.03125,
+        }
+    },
     # 5-state random walk environment with tabular features
     {
         'env': RandomWalk,
@@ -20,6 +40,7 @@ PROBLEMS = [
         'gamma': 1.0,
         'steps': 3000,
         # hardcode stepsizes found from parameter study
+        # NOT BEING USED IN WEIGHTING EXPERIMENTS. USING SWEEP
         'stepsizes': {
             'TD': 0.03125,
             'TDRC': 0.03125,

@@ -51,7 +51,7 @@ for i, problem in enumerate(PROBLEMS):
 
             # Plotting the mean RMSPBE over steps with error bars
             steps = range(len(mean_curve))  # Assuming mean_curve length matches the number of steps
-            ax.errorbar(steps, mean_curve, yerr=stderr_curve, label=f'{learner_name} weighting {weighting.__name__}', color=COLORS[weighting_num])
+            ax.errorbar(steps, mean_curve, yerr=stderr_curve, label=f'Learner: {learner_name}, Weighting: {weighting.__name__}', color=COLORS[weighting_num])
 
         # Adding a legend to each subplot
         ax.legend()
